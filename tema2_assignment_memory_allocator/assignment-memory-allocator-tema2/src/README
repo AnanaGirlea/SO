@@ -1,0 +1,48 @@
+Name: Girlea Anana Catalina
+Class: 333CA
+
+Assignment 2 SO - Memory Allocator
+
+Implementation: 
+
+I followed the flow indicated by the README and by the malloc tutorial provided.
+
+Memory Functions:
+
+I split all of my functions to accommodate 3 cases. 
+
+os_malloc 
+    Case 1: the size of the block is below 0 => NULL is returned 
+    Case 2: the size of the block is bigger than MMAP_THRESHOLD => I map the memory in 
+        Memory Mapping Segment using mmap and change the status of the block to 
+        STATUS_MAPPED. 
+    Case 3: the size of the block is smaller than MMAP_THRESHOLD => I map the memory in 
+        Hreap using sbrk and change the status of the block to STATUS_ALLOC. If I do not 
+        have a block with sufficient space to accommodate the size, I request more space.
+
+os_calloc 
+    Almost identical to malloc. The new threshold is page_size
+
+os_realloc 
+    Case 1: tackles the corner cases such ass the block is NULL or size of block is below 0
+    Case 2: the original block is in Memory Mapping Segment and it needs to remain in the 
+        Memory Mapping Segment. I move the new block to a new space and free the original 
+        block.
+    Case 3: the original block is in Heap
+        Case 3.1: the new block needs to be in Memory Mapping. I move the new block to a new 
+            space and free the original block.
+        Case 3.2: the new block needs to be in Heap. I try to expand the block. If it is not 
+            possible, I move the new block to a new space and free the original zone.
+
+os_free 
+    Case 1: block is empty => I do nothing 
+    Case 2: freeing mapped memory blocks from Memory Mapping Segment => These blocks 
+        are allocated using mmap so I use munumap to free them 
+    Case 3: freeing mapped memory blocks from Heap => These blocks are allocated using 
+        sbrk so I use sbrk to free them
+
+References:
+
+Linux manual pages 
+https://moss.cs.iit.edu/cs351/slides/slides-malloc.pdf 
+https://danluu.com/malloc-tutorial/
